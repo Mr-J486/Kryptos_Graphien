@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chat</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<h1 class="sender">{{sender}}</h1>
+<div class="container">
+    <h2>Send Message to {{receiver}}</h2>
+
+    <form method="POST" action="/"> <!--this action attribute tell the form where to submit -->
+        <textarea name="msg" placeholder="Enter your message" required></textarea>
+        <button type="submit">Send</button>
+    </form>
+
+    {% if status %}
+        <p>{{ status }}</p>
+    {% endif %}
+
+    <hr>
+
+    <h2>Inbox</h2>
+
+    
+    <!-- JS will fill this dynamically -->
+    <div id="inbox"></div>
+
+</div>
+<script>
+function updateInbox() {
+    fetch('/inbox_api')
+        .then(response => response.json())
+        .then(data => {
+            let inboxDiv = document.getElementById("inbox");
+            inboxDiv.innerHTML = "";
+
+            data.messages.forEach(m => {
+                inboxDiv.innerHTML += `<div class="message-box">${m}</div>`;
+            });
+        });
+}
+
+setInterval(updateInbox, 500);  
+
+window.onload = updateInbox; // this fixes the delay issue happens in 
+
+// ENTER TO SUBMIT (Enter = send, Shift+Enter = newline)
+document.querySelector("textarea").addEventListener("keydown", function(e) {
+    if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        this.form.submit();
+    }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Caesar Cipher</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+
+</head>
+<body>
+<a  href="/" class="home-btn"> Home</a>
+<div class="container">
+    <h2>Caesar Cipher</h2>
+
+    <form method="POST">
+
+        <label>Enter Text:</label>
+        <textarea name="text" required>{{ text }}</textarea>
+
+        <label>Shift Key:</label>
+        <input type="number" name="key" min="0" max="25" required value="{{ key }}">
+
+        <button type="submit" name="mode" value="encrypt" class="encrypt">
+            Encrypt
+        </button>
+
+        <button type="submit" name="mode" value="decrypt" class="decrypt">
+            Decrypt
+        </button>
+
+        <label>Output:</label>
+        <textarea readonly>{{ output }}</textarea>
+
+    </form>
+</div>
+
+</body>
+</html>

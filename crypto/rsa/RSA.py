@@ -1,0 +1,36 @@
+from sympy import randprime, isprime
+from Crypto.Util.number import inverse, long_to_bytes, bytes_to_long
+import math
+
+
+#n0 = 43941819371451617899582143885098799360907134939870946637129466519309346255747
+#p0 = 205237461320000835821812139013267110933
+#q0 = 214102333408513040694153189550512987959
+#c0 = 9002431156311360251224219512084136121048022631163334079215596223698721862766
+
+# RSA-1024
+# Given values
+e = 65537
+lower, upper = 1 << 15, (1 << 16) - 1
+while True:
+    p = randprime(lower, upper)
+    q = randprime(lower, upper)
+    if p == q: 
+        continue
+    phi = (p - 1) * (q - 1)
+    if math.gcd(e, phi) == 1:
+        n = p * q
+        d = inverse(e, phi)
+assert isprime(p) and isprime(q)
+assert p * q == n
+# Encrypt 
+m = bytes_to_long(b"THM{Psssss_4nd_Qsssssss}") 
+c = pow(m, e, n)
+print(f"c = {c}")
+
+# Decrypt
+m2 = pow(c, e, n)
+flag = long_to_bytes(m2)
+print(flag.decode('utf-8', errors='ignore'))
+#c = 56770746252744555773347749068622106981268734962451818400802417632235262475721293203436492056853704188585314256030989281210620514248774392679384430569521410622174195683835535588615148122931497354605039719280153678102882466684521673195568037281573666234713987939619424349035255185906527279069677832544630929988 
+#decrypt = pow(c, d, n)

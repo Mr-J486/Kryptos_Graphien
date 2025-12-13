@@ -1,0 +1,120 @@
+/* Global beige and black theme */
+
+body {
+    background-color: #f5f5dc; /* beige */
+    color: #000; /* black */
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    background: #fff;
+    padding: 25px;
+    width: 450px;
+    margin: 80px auto;
+    border-radius: 12px;
+    box-shadow: 0 0 12px rgba(0,0,0,0.18);
+}
+
+h2 {
+    text-align: center;
+    color: #000;
+}
+
+input, textarea, select {
+    width: 90%;
+    padding: 12px;
+    margin-top: 12px;
+    margin-bottom: 12px;
+    border-radius: 6px;
+    border: 1px solid #000;
+    background: #fafafa;
+    font-size: 16px;
+    color: #000;
+    margin-left: auto;
+    margin-right: auto;
+    display: block;        /* required to center inputs */
+    resize: none;
+
+}
+
+button {
+    width: 100%;
+    padding: 12px;
+    margin-top: 12px;
+    margin-bottom: 12px;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+    background: #000;      /* black button */
+    color: #f5f5dc;        /* beige text */
+    transition: 0.25s;
+}
+
+button:hover {
+    background: #333;
+}
+
+textarea[readonly] {
+    background: #eee;
+}
+
+label {
+    font-weight: bold;
+}
+
+.home-container {
+        width: 500px;
+        margin: 100px auto;
+        text-align: center;
+    }
+
+.crypto-btn {
+    display: block;
+    width: 100%;
+    padding: 15px;
+    margin: 12px 0;
+    background: #000;
+    color: #f5f5dc;
+    text-decoration: none;
+    border-radius: 8px;
+    font-size: 20px;
+    transition: 0.25s;
+}
+
+.crypto-btn:hover {
+    background: #333;
+}
+
+.home-btn {
+    padding: 15px;
+    width: 100%;
+    color: #000;
+    text-decoration: none;
+    border-radius: 8px;
+    font-size: 20px;
+    transition: 0.25s;
+}
+.home-btn:hover {
+    color: #333;
+}
+.sender{
+    text-align: center;
+}
+
+.message-box {
+    background: #f0f0e6;      /* light beige tone */
+    padding: 10px;
+    margin: 4px 0;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 15px;
+
+    /* FIX LONG TEXT BREAKING OUT OF THE CONTAINER */
+    word-wrap: break-word;        /* old browsers */
+    overflow-wrap: break-word;    /* modern browsers */
+    white-space: pre-wrap;        /* preserve line breaks */
+    max-width: 100%;
+}
