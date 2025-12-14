@@ -1,5 +1,5 @@
 # aes_core.py
-# AES-128 core operations (FROM SCRATCH)
+# AES-128 core (CORRECT implementation)
 
 S_BOX = [
 0x63,0x7c,0x77,0x7b,0xf2,0x6b,0x6f,0xc5,0x30,0x01,0x67,0x2b,0xfe,0xd7,0xab,0x76,
@@ -20,40 +20,65 @@ S_BOX = [
 0x8c,0xa1,0x89,0x0d,0xbf,0xe6,0x42,0x68,0x41,0x99,0x2d,0x0f,0xb0,0x54,0xbb,0x16
 ]
 
-INV_S_BOX = [S_BOX.index(i) for i in range(256)]
+INV_S_BOX = [0]*256
+for i, v in enumerate(S_BOX):
+    INV_S_BOX[v] = i
+
 RCON = [0x01,0x02,0x04,0x08,0x10,0x20,0x40,0x80,0x1B,0x36]
 
-def bytes_to_matrix(b): return [list(b[i:i+4]) for i in range(0,16,4)]
-def matrix_to_bytes(m): return bytes(sum(m,[]))
+def bytes_to_state(b):
+    return [[b[r + 4*c] for c in range(4)] for r in range(4)]
+
+def state_to_bytes(s):
+    return bytes(s[r][c] for c in range(4) for r in range(4))
+
+def rot_word(w): return w[1:] + w[:1]
+def sub_word(w): return [S_BOX[x] for x in w]
 
 def key_expansion(key):
-    keys = bytes_to_matrix(key)
-    i = 0
-    while len(keys) < 44:
-        temp = list(keys[-1])
-        if len(keys) % 4 == 0:
-            temp = temp[1:] + temp[:1]
-            temp = [S_BOX[x] for x in temp]
-            temp[0] ^= RCON[i]
-            i += 1
-        temp = [a ^ b for a, b in zip(temp, keys[-4])]
-        keys.append(temp)
-    return [keys[4*i:4*(i+1)] for i in range(11)]
+    w = [list(key[i:i+4]) for i in range(0,16,4)]
+    r = 0
+    while len(w) < 44:
+        temp = w[-1].copy()
+        if len(w) % 4 == 0:
+            temp = sub_word(rot_word(temp))
+            temp[0] ^= RCON[r]
+            r += 1
+        w.append([a ^ b for a,b in zip(w[-4], temp)])
+
+    keys = []
+    for i in range(11):
+        rk = [[0]*4 for _ in range(4)]
+        for c in range(4):
+            for r in range(4):
+                rk[r][c] = w[4*i+c][r]
+        keys.append(rk)
+    return keys
+
+def gmul(a,b):
+    p = 0
+    for _ in range(8):
+        if b & 1: p ^= a
+        hi = a & 0x80
+        a = (a << 1) & 0xFF
+        if hi: a ^= 0x1B
+        b >>= 1
+    return p
 
 def add_round_key(s, k):
-    for i in range(4):
-        for j in range(4):
-            s[i][j] ^= k[i][j]
+    for r in range(4):
+        for c in range(4):
+            s[r][c] ^= k[r][c]
 
 def sub_bytes(s):
-    for i in range(4):
-        for j in range(4):
-            s[i][j] = S_BOX[s[i][j]]
+    for r in range(4):
+        for c in range(4):
+            s[r][c] = S_BOX[s[r][c]]
 
 def inv_sub_bytes(s):
-    for i in range(4):
-        for j in range(4):
-            s[i][j] = INV_S_BOX[s[i][j]]
+    for r in range(4):
+        for c in range(4):
+            s[r][c] = INV_S_BOX[s[r][c]]
 
 def shift_rows(s):
     s[1] = s[1][1:] + s[1][:1]
@@ -65,52 +90,38 @@ def inv_shift_rows(s):
     s[2] = s[2][-2:] + s[2][:-2]
     s[3] = s[3][-3:] + s[3][:-3]
 
-def gmul(a, b):
-    p = 0
-    for _ in range(8):
-        if b & 1: p ^= a
-        hi = a & 0x80
-        a = (a << 1) & 0xFF
-        if hi: a ^= 0x1B
-        b >>= 1
-    return p
-
 def mix_columns(s):
-    for i in range(4):
-        a = s[i]
-        s[i] = [
-            gmul(a[0],2)^gmul(a[1],3)^a[2]^a[3],
-            a[0]^gmul(a[1],2)^gmul(a[2],3)^a[3],
-            a[0]^a[1]^gmul(a[2],2)^gmul(a[3],3),
-            gmul(a[0],3)^a[1]^a[2]^gmul(a[3],2)
-        ]
+    for c in range(4):
+        a = [s[r][c] for r in range(4)]
+        s[0][c] = gmul(a[0],2)^gmul(a[1],3)^a[2]^a[3]
+        s[1][c] = a[0]^gmul(a[1],2)^gmul(a[2],3)^a[3]
+        s[2][c] = a[0]^a[1]^gmul(a[2],2)^gmul(a[3],3)
+        s[3][c] = gmul(a[0],3)^a[1]^a[2]^gmul(a[3],2)
 
 def inv_mix_columns(s):
-    for i in range(4):
-        a = s[i]
-        s[i] = [
-            gmul(a[0],14)^gmul(a[1],11)^gmul(a[2],13)^gmul(a[3],9),
-            gmul(a[0],9)^gmul(a[1],14)^gmul(a[2],11)^gmul(a[3],13),
-            gmul(a[0],13)^gmul(a[1],9)^gmul(a[2],14)^gmul(a[3],11),
-            gmul(a[0],11)^gmul(a[1],13)^gmul(a[2],9)^gmul(a[3],14)
-        ]
+    for c in range(4):
+        a = [s[r][c] for r in range(4)]
+        s[0][c] = gmul(a[0],14)^gmul(a[1],11)^gmul(a[2],13)^gmul(a[3],9)
+        s[1][c] = gmul(a[0],9)^gmul(a[1],14)^gmul(a[2],11)^gmul(a[3],13)
+        s[2][c] = gmul(a[0],13)^gmul(a[1],9)^gmul(a[2],14)^gmul(a[3],11)
+        s[3][c] = gmul(a[0],11)^gmul(a[1],13)^gmul(a[2],9)^gmul(a[3],14)
 
-def aes_encrypt_block(block, key):
-    s = bytes_to_matrix(block)
+def aes_encrypt_block(b, key):
+    s = bytes_to_state(b)
     rk = key_expansion(key)
     add_round_key(s, rk[0])
-    for r in range(1,10):
-        sub_bytes(s); shift_rows(s); mix_columns(s); add_round_key(s, rk[r])
+    for i in range(1,10):
+        sub_bytes(s); shift_rows(s); mix_columns(s); add_round_key(s, rk[i])
     sub_bytes(s); shift_rows(s); add_round_key(s, rk[10])
-    return matrix_to_bytes(s)
+    return state_to_bytes(s)
 
-def aes_decrypt_block(block, key):
-    s = bytes_to_matrix(block)
+def aes_decrypt_block(b, key):
+    s = bytes_to_state(b)
     rk = key_expansion(key)
     add_round_key(s, rk[10])
     inv_shift_rows(s); inv_sub_bytes(s)
-    for r in range(9,0,-1):
-        add_round_key(s, rk[r])
+    for i in range(9,0,-1):
+        add_round_key(s, rk[i])
         inv_mix_columns(s); inv_shift_rows(s); inv_sub_bytes(s)
     add_round_key(s, rk[0])
-    return matrix_to_bytes(s)
+    return state_to_bytes(s)

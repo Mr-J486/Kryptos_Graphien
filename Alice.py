@@ -109,7 +109,6 @@ def receive():
             shared_key, 
             initial_vector)
         inbox_messages.append(f"Bob: {dec_msg.decode()}")
-        print("shit")
     return {"status": "received"}
 
 
