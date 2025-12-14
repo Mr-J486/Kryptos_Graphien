@@ -17,9 +17,24 @@ def gen_rsa_1024():
             n = p * q
             d = EEA(e, phi)
             return p, q, n, e, d
+        
+def gen_rsa_2048():
+    e = 65537
+    # 512-bit primes -> ~1024-bit modulus
+    lower, upper = 1 << 1023, (1 << 1024) - 1
+    while True:
+        p = randprime(lower, upper)
+        q = randprime(lower, upper)
+        if p == q: 
+            continue
+        phi = (p - 1) * (q - 1)
+        if GCD(e, phi) == 1:
+            n = p * q
+            d = EEA(e, phi)
+            return p, q, n, e, d
 
 def request_key():
-    p, q, n, e, d = gen_rsa_1024()
+    p, q, n, e, d = gen_rsa_2048()
     public_key = (n,e)
     private_key = (n,d)
     return public_key, private_key
@@ -41,7 +56,10 @@ def rsa_enc(plain, pub_key):
 
     n, e = pub_key
     #print(f"n= {n}, e= {e}")
-    m = int.from_bytes(plain.encode(),'big')
+    #m = int.from_bytes(plain.encode(),'big')
+    # plain = plain.encode()   # convert str → bytes
+    print(f"type is : {type(plain)}")
+    m = bytes_to_long(plain)
     #print(f"message encoded = {m}")
     return pow(m, e, n)
 
@@ -52,9 +70,10 @@ def rsa_dec(cipher, pri_key):
     #print(f"pow= {pow(cipher, d, n)}")
     m = pow(cipher, d, n)
     #print(f"m= {m}")
-    byte_length = (int.bit_length(m) + 7) // 8
-    plaintext = int.to_bytes(m, byte_length).decode()
-    return plaintext
+    #byte_length = (int.bit_length(m) + 7) // 8
+    #plaintext = int.to_bytes(m, byte_length).decode()
+    
+    return long_to_bytes(m)
 
 
 
@@ -76,9 +95,9 @@ plaintext_bytes = int.to_bytes(m2, byte_length)
 
 pub, pri = rsa_test()
 #print(f"pub: {pub} \n pri: {pri}")
-
-c = rsa_enc("hello", pub)
+testplain = b"hello"
+#c = rsa_enc(testplain, pub)
 #print(f"c= {c}")
 
-p = rsa_dec(c, pri)
+#p = rsa_dec(c, pri)
 #print(f"decrypted_message= {p}")

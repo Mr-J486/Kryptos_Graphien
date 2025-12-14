@@ -36,8 +36,8 @@ def EEA (B,A):
     T1 = 0
     T2 = 1
     T = T1-(T2 * Q)
-    print(f"Q A B R T1 T2 T")
-    print(f"{Q} {A} {B} {R} {T1}  {T2} {T}")
+    #print(f"Q A B R T1 T2 T")
+    #print(f"{Q} {A} {B} {R} {T1}  {T2} {T}")
     while(R!=0):
         A=B
         B=R
@@ -47,11 +47,11 @@ def EEA (B,A):
         #print(f"R={R}")
         Q=int(A/B)
         T = T1-(T2 * Q)
-        print(f"{Q} {A} {B} {R} {T1}  {T2} {T}")
+        #print(f"{Q} {A} {B} {R} {T1}  {T2} {T}")
     if T2 <0:
         T2+= OA
     return T2
 
 A = 7
-B = 160
-print(f"EEA({A} mod({B}) ) = {EEA(A,B)}")
+B = 16
+#print(f"EEA({A} mod({B}) ) = {EEA(A,B)}")
