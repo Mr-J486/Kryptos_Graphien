@@ -1,7 +1,6 @@
 from flask import Flask, request, render_template
 import requests
-from Crypto.Util.number import bytes_to_long, long_to_bytes
-from crypto.rsa.rsatest import request_key, rsa_test, rsa_enc, rsa_dec
+from crypto.rsa.rsatest import request_key, rsa_dec
 from AES.aes import aes_cbc_encrypt, aes_cbc_decrypt
 import base64
 app = Flask(__name__)

@@ -2,18 +2,24 @@ from flask import Flask, request, render_template
 import requests
 import sys, os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from crypto.rsa.rsatest import request_key, rsa_test, rsa_enc, rsa_dec
+from crypto.rsa.rsatest import request_key, rsa_dec
+from AES.aes import aes_cbc_encrypt, aes_cbc_decrypt
+import base64
 app = Flask(__name__, template_folder="../templates", static_folder="../static")
 
 FATMA_NODE_URL = "http://127.0.0.1:5862/receive"
-Karim_NODE_URL = "http://127.0.0.1:5863/receive"
+KARIM_NODE_URL = "http://127.0.0.1:5863/receive"
 inbox_messages = []
 Y_pub_key, Y_prv_key = request_key()
 F_key, K_key = None, None
 sent_my_key_to_F, sent_my_key_to_K = False, False
+shared_key, initial_vector = None, None
+
 @app.route("/", methods=["GET", "POST"])
 def home():
     global sent_my_key_to_F, sent_my_key_to_K
+    global shared_key
+
     status = ""
 
 
@@ -25,41 +31,54 @@ def home():
             if F_key is None:
                 status = "Can't comunicate with Fatma right now She's offline"
             else:
-                enc_msg = rsa_enc(msg, F_key)
-                #print(f"enc_msg: {enc_msg}")
-                payload = {"type":"message","msg": str(enc_msg), "sender":"Youssef"}
+                if shared_key is None or initial_vector is None:
+                    status = "I don't have the shared Key"
+                else:
+                    enc_msg = aes_cbc_encrypt(msg.encode(), shared_key, initial_vector)
+                    #enc_msg = rsa_enc(msg, F_key)
+                    #print(f"enc_msg: {enc_msg}")
+                    payload = {
+                        "type":"message",
+                        "enc_msg": base64.b64encode(enc_msg).decode(), 
+                        "sender":"Youssef"
+                    }
 
-
-                try:
-                    requests.post(
-                        FATMA_NODE_URL,
-                        json=payload,
-                        headers={"Content-Type": "application/json"},
-                        timeout=1
-                    )
-                    status = "Message sent!"
-                except:
-                    status = "Fatma didn't receive the message"
-            
+                    try:
+                        requests.post(
+                            FATMA_NODE_URL,
+                            json=payload,
+                            headers={"Content-Type": "application/json"},
+                            timeout=1
+                        )
+                        status = "Message sent!"
+                    except:
+                        status = "Fatma didn't receive the message"
+                
             if K_key is None:
-                status = "Can't comunicate with Karim right now He's offline"
+                status = "Can't comunicate with Karim right now, He's offline"
             else:
-                msg = request.form.get("msg")
-                enc_msg = rsa_enc(msg, K_key)
-                #print(f"enc_msg: {enc_msg}")
-                payload = {"type":"message","msg": str(enc_msg), "sender":"Youssef"}
+                if shared_key is None or initial_vector is None:
+                    status = "I don't have the shared Key"
+                else:
+                    enc_msg = aes_cbc_encrypt(msg.encode(), shared_key, initial_vector)                    
+                    #enc_msg = rsa_enc(msg, K_key)
+                    #print(f"enc_msg: {enc_msg}")
+                    payload = {
+                        "type":"message",
+                        "enc_msg": base64.b64encode(enc_msg).decode(), 
+                        "sender":"Youssef"
+                    }
 
-
-                try:
-                    requests.post(
-                        Karim_NODE_URL,
-                        json=payload,
-                        headers={"Content-Type": "application/json"},
-                        timeout=1
-                    )
-                    status = "Message sent!"
-                except:
-                    status = "Karim didn't receive the message"
+                    try:
+                        requests.post(
+                            KARIM_NODE_URL,
+                            json=payload,
+                            headers={"Content-Type": "application/json"},
+                            timeout=1
+                        )
+                        status = "Message sent!"
+                    except:
+                        status = "Karim didn't receive the message"
 
         inbox_messages.append(f"Youssef: {msg}")
 
@@ -69,7 +88,12 @@ def home():
     if request.method == "GET":
         if sent_my_key_to_F is False:
         
-            payload = {"type":"key", "Author":"Youssef", "n": Y_pub_key[0], "e": Y_pub_key[1]}
+            payload = {
+                "type":"Y_key", 
+                "Author":"Youssef", 
+                "n": Y_pub_key[0], 
+                "e": Y_pub_key[1]
+            }
             try:
                 requests.post(
                     FATMA_NODE_URL,
@@ -81,10 +105,16 @@ def home():
             except:
                 status = "Fatma didn't receive the Key"
         if sent_my_key_to_K is False:
-            payload = {"type":"key", "Author":"Youssef", "n": Y_pub_key[0], "e": Y_pub_key[1]}
+            
+            payload = {
+                "type":"Y_key", 
+                "Author":"Youssef", 
+                "n": Y_pub_key[0], 
+                "e": Y_pub_key[1]
+            }
             try:
                 requests.post(
-                    Karim_NODE_URL,
+                    KARIM_NODE_URL,
                     json=payload,
                     headers={"Content-Type": "application/json"},
                     timeout=1
@@ -105,15 +135,28 @@ def home():
 @app.route("/receive", methods=["POST"])
 def receive():
     global F_key, K_key
+    global shared_key, initial_vector
+
     data = request.get_json() # dict
-    if data["type"] == "key":
-        if data["Author"] == "Fatma":    
-            F_key = (data["n"],data["e"])
-        else:
-            K_key = (data["n"],data["e"])
+    if data["type"] == "F_key":
+        F_key = (data["n"],data["e"])
+    elif data["type"] == "K_key":
+        K_key = (data["n"],data["e"])
+    elif data["type"] == "AES-key":
+        print("Youssef trying to receive aes key")
+        shared_key = (rsa_dec(data["key"], Y_prv_key))
+        initial_vector = base64.b64decode(data["IV"])
+
+        print(f"Youssef received shared key: {shared_key}")
+        print(f"Youssef received initial: {initial_vector}")
     else:
-        dec_msg = rsa_dec(int(data["msg"]), Y_prv_key)
-        inbox_messages.append(f"{data["sender"]}: {dec_msg}")
+        ciphertext = base64.b64decode(data["enc_msg"])
+        dec_msg = aes_cbc_decrypt(
+            ciphertext, 
+            shared_key, 
+            initial_vector)
+        #dec_msg = rsa_dec(int(data["msg"]), Y_prv_key)
+        inbox_messages.append(f"{data["sender"]}: {dec_msg.decode()}")
     return {"status": "received"}
 
 
