@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>SHA-256 Hashing</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='SHA256.css') }}">
+</head>
+<body>
+<a href="/" class="home-btn">Home</a>
+<div class="container">
+    <h2>SHA-256 Hashing</h2>
+
+    <form method="POST">
+        <label>Enter Text:</label>
+        <textarea name="text" required>{{ text }}</textarea>
+
+        <button type="submit" class="hash-btn">
+            Generate SHA-256 Hash
+        </button>
+
+        <label>Output (SHA-256 Hash):</label>
+        <textarea readonly>{{ output }}</textarea>
+    </form>
+</div>
+
+<!-- Place the script here, just before the closing </body> -->
+<script>
+    // This function will trigger form submission when Enter is pressed
+    document.addEventListener("DOMContentLoaded", function() {
+        const form = document.querySelector("form");
+        const textArea = document.querySelector("textarea[name='text']");
+
+        textArea.addEventListener("keydown", function(event) {
+            if (event.key === "Enter") {
+                event.preventDefault(); // Prevent the default "Enter" action (which is adding a new line)
+                form.submit(); // Submit the form when Enter is pressed
+            }
+        });
+    });
+</script>
+
+</body>
+</html>

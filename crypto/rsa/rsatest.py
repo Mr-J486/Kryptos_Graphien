@@ -1,5 +1,5 @@
 from sympy import randprime, isprime
-from Crypto.Util.number import inverse, bytes_to_long, long_to_bytes
+from Crypto.Util.number import bytes_to_long, long_to_bytes
 import sys, os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from utils.EuclideanAlgorithm import GCD, EEA

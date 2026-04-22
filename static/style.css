@@ -118,3 +118,12 @@ label {
     white-space: pre-wrap;        /* preserve line breaks */
     max-width: 100%;
 }
+/* Styling for deactivated links (grayed-out and non-clickable appearance) */
+.crypto-btn.deactivated {
+    color: #000000;  /* Gray color */
+    background-color: #b4b4b4;  /* Lighter background */
+    text-decoration: none;  /* Remove underline */
+    cursor: not-allowed;  /* Disable pointer cursor */
+    pointer-events: none;  /* Disable all interactions */
+    opacity: 0.5;  /* Slightly transparent */
+}
