@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>SHA-1 Hashing</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<div class="container">
+    <h1>SHA-1 Hashing</h1>
+
+    <form method="POST">
+        <input type="text" name="text" placeholder="Enter text to hash" value="{{ text }}">
+        <button type="submit">Hash</button>
+    </form>
+
+    {% if output %}
+        <div class="result">
+            <h3>SHA-1 Hash:</h3>
+            <p>{{ output }}</p>
+        </div>
+    {% endif %}
+
+    <a href="/" class="back-btn">Back</a>
+</div>
+
+</body>
+</html>
