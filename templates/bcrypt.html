@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>bcrypt Password Hashing</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<a href="/" class="home-btn">Home</a>
+
+<div class="container">
+    <h2>bcrypt Password Hashing</h2>
+
+    {% if error %}
+        <p style="color: red; text-align: center;">{{ error }}</p>
+    {% endif %}
+
+    <form method="POST" action="/bcrypt">
+        <label>Enter Password to Hash:</label>
+        <input type="password" name="text" required value="{{ text }}">
+        <button type="submit">Generate bcrypt Hash</button>
+    </form>
+
+    <label>Generated Hash:</label>
+    <textarea readonly>{{ hash_output }}</textarea>
+
+    <hr>
+
+    <h2>Verify Password Against Hash</h2>
+
+    <form method="POST" action="/bcrypt/verify">
+        <label>Password:</label>
+        <input type="password" name="password" required value="{{ verify_password_input }}">
+
+        <label>Hash:</label>
+        <textarea name="hashed" required>{{ verify_hash_input }}</textarea>
+
+        <button type="submit">Verify</button>
+    </form>
+
+    {% if verify_result is sameas true %}
+        <p style="color: green; text-align: center; font-weight: bold;">
+            Password matches the hash.
+        </p>
+    {% elif verify_result is sameas false %}
+        <p style="color: red; text-align: center; font-weight: bold;">
+            Password does not match the hash.
+        </p>
+    {% endif %}
+</div>
+</body>
+</html>
