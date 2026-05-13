@@ -50,7 +50,7 @@ _POINT_LEN   = 65   # bytes uncompressed EC point 04||x||y
 #  Key Derivation  (HKDF-SHA256)
 # ---------------------------
 
-def _hkdf(ikm: bytes, length: int, info: bytes = b"ECIES-secp256k1") -> bytes:
+def _hkdf(ikm: bytes, length: int, info: bytes = b"ECIES") -> bytes:
     # Extract
     prk = _hmac.new(bytes(32), ikm, _sha256).digest()
     # Expand
