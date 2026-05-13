@@ -4,6 +4,7 @@
 # Each 512 block is further divided into 16 words of 32 bits.
 #
 #
+import os
 
 
 #✅
@@ -25,7 +26,7 @@ def generate_hash(message: bytearray) -> bytearray:
     string object."""
 
     if isinstance(message, str):
-        message = bytearray(message, 'ascii')
+        message = bytearray(message, 'utf-8')
     elif isinstance(message, bytes):
         message = bytearray(message)
     elif not isinstance(message, bytearray):
@@ -52,8 +53,8 @@ def generate_hash(message: bytearray) -> bytearray:
     h1 = 0xbb67ae85
     h2 = 0x3c6ef372
     h3 = 0xa54ff53a
-    h5 = 0x9b05688c
     h4 = 0x510e527f
+    h5 = 0x9b05688c
     h6 = 0x1f83d9ab
     h7 = 0x5be0cd19
 
@@ -168,6 +169,35 @@ def _rotate_right(num: int, shift: int, size: int = 32):
     """Rotate an integer right."""
     return (num >> shift) | (num << size - shift)
 
+
+def hash_file(file_path):
+    """Read the file and calculate its SHA-256 hash."""
+    try:
+        with open(file_path, 'rb') as file:
+            file_data = file.read()  # Read the entire file
+            file_hash = generate_hash(file_data)  # Generate the SHA-256 hash
+            return file_hash
+    except FileNotFoundError:
+        print(f"Error: The file at {file_path} was not found.")
+        return None
+    
+
 if __name__ == "__main__":
     
-    print(generate_hash("Hello").hex())
+    print(generate_hash("Hello"))
+      
+      
+    # Get the current directory (where the script is located)
+    current_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # Current directory path
+    # Specify the path to the file inside the 'uploads' folder
+    uploads_folder = os.path.join(current_dir, 'uploads')  # 'uploads' folder path
+    file_name = 'Crypto_Project_Delivery_Schedule.pdf'  # Replace with your actual file name
+    file_path = os.path.join(uploads_folder, file_name)  # Combine the uploads folder path with the file name
+    
+    # Check if the file exists in the uploads folder
+    if os.path.exists(file_path):
+        file_hash = hash_file(file_path)
+        if file_hash:
+            print(f"SHA-256 hash of the file: {file_hash}")
+    else:
+        print(f"File {file_name} does not exist in the 'uploads' folder.")

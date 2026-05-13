@@ -1,40 +1,54 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SHA-256 Hashing</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='SHA256.css') }}">
 </head>
 <body>
+
 <a href="/" class="home-btn">Home</a>
+
 <div class="container">
     <h2>SHA-256 Hashing</h2>
 
-    <form method="POST">
+    <form method="POST" enctype="multipart/form-data">
+        <!-- Input for Text -->
         <label>Enter Text:</label>
-        <textarea name="text" required>{{ text }}</textarea>
+        <textarea name="text" placeholder="Enter text for hashing">{{ text }}</textarea>
 
-        <button type="submit" class="hash-btn">
-            Generate SHA-256 Hash
-        </button>
+        <!-- File Input -->
+        <label>Upload File:</label>
+        <input type="file" name="file" accept="application/octet-stream">
 
-        <label>Output (SHA-256 Hash):</label>
-        <textarea readonly>{{ output }}</textarea>
+        <!-- Submit Button -->
+        <button type="submit" class="hash-btn">Generate SHA-256 Hash</button>
+
+        <!-- Output Display Box -->
+        <div class="output-box">
+            <label>Output (SHA-256 Hash):</label>
+            <textarea readonly placeholder="Hash will appear here...">{{ output or file_hash }}</textarea>
+        </div>
     </form>
 </div>
 
-<!-- Place the script here, just before the closing </body> -->
 <script>
-    // This function will trigger form submission when Enter is pressed
     document.addEventListener("DOMContentLoaded", function() {
         const form = document.querySelector("form");
         const textArea = document.querySelector("textarea[name='text']");
+        const fileInput = document.querySelector("input[name='file']");
 
         textArea.addEventListener("keydown", function(event) {
             if (event.key === "Enter") {
-                event.preventDefault(); // Prevent the default "Enter" action (which is adding a new line)
-                form.submit(); // Submit the form when Enter is pressed
+                event.preventDefault();
+                form.submit();
             }
+        });
+
+        // Clear output when the form is reloaded
+        form.addEventListener("reset", function() {
+            document.querySelector(".output-box textarea").value = "";  // Clear output box
         });
     });
 </script>

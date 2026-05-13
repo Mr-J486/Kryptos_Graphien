@@ -63,6 +63,8 @@ button:hover {
 
 textarea[readonly] {
     background: #eee;
+    min-height: 100px;   /* Ensure the output box is tall enough */
+    height: auto;        /* Allow flexibility for output text */
 }
 
 label {
