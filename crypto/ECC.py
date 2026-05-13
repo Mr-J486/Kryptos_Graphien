@@ -162,6 +162,49 @@ def ecdsa_verify(message: bytes, signature: tuple, public_key: tuple,
     return point[0] % n == r
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # ---------------------------------------------
 #  Encoding helpers
 # ---------------------------------------
