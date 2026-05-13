@@ -12,16 +12,8 @@ from crypto.ECC import (
 
 
 class _SHA256Digestmod:
-    """Minimal hashlib-compatible wrapper for the custom SHA-256 implementation.
-
-    Python's ``hmac.new()`` only requires the digestmod object to be callable
-    and to return something with ``digest()``, ``digest_size``, and
-    ``block_size`` attributes.  This class satisfies that contract while
-    delegating all computation to the custom ``generate_hash`` implementation
-    from ``Hashing/SHA256.py``.
-    """
-    digest_size = 32   # SHA-256 produces 32 bytes
-    block_size  = 64   # SHA-256 internal block size in bytes
+    digest_size = 32   
+    block_size  = 64   
 
     def __init__(self, data: bytes = b""):
         self._data = bytearray(data)
@@ -39,7 +31,6 @@ class _SHA256Digestmod:
         return _SHA256Digestmod(bytes(self._data))
 
     def __call__(self, data: bytes = b"") -> "_SHA256Digestmod":
-        """Make the class itself callable so it can be passed as digestmod."""
         return _SHA256Digestmod(data)
 
 
@@ -48,16 +39,16 @@ _sha256 = _SHA256Digestmod()
 
 
 # -------------------------------------------------------
-_AES_KEY_LEN = 16   # bytes  — AES-128 
-_MAC_KEY_LEN = 32   # bytes  — HMAC-SHA256
-_IV_LEN      = 16   # bytes  — AES block size
-_TAG_LEN     = 32   # bytes  — HMAC-SHA256 output
-_POINT_LEN   = 65   # bytes  — uncompressed EC point 04||x||y
+_AES_KEY_LEN = 16   # bytes AES-128 
+_MAC_KEY_LEN = 32   # bytes HMAC-SHA256
+_IV_LEN      = 16   # bytes AES block size
+_TAG_LEN     = 32   # bytes HMAC-SHA256 output
+_POINT_LEN   = 65   # bytes uncompressed EC point 04||x||y
 
 
-# --------------------------------------------------------
+# --------------------------------------
 #  Key Derivation  (HKDF-SHA256)
-# -------------------------------
+# ---------------------------
 
 def _hkdf(ikm: bytes, length: int, info: bytes = b"ECIES-secp256k1") -> bytes:
     # Extract
@@ -76,7 +67,7 @@ def _derive_keys(shared_secret: bytes):
     return km[:_AES_KEY_LEN], km[_AES_KEY_LEN:]
 
 
-# ------------------------------------------------------
+# ----------------------------------------------
 #  Point Encoding
 # ------------------
 
@@ -157,7 +148,7 @@ def ecies_decrypt(bundle: bytes, recipient_priv: int) -> bytes:
     return aes_cbc_decrypt(ct, aes_key, iv)                    
 
 
-# -----------------------------------wrappers---------------------------------
+# ---------------------------wrappers---------------------------------
 
 def ecies_encrypt_str(msg: str, pub, enc='utf-8') -> bytes:
     return ecies_encrypt(msg.encode(enc), pub)

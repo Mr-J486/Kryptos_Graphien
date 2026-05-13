@@ -1,19 +1,9 @@
-"""
-Alice2.py  —  port 5001
-======================
-Key exchange  : ECDH  (replaces RSA key-transport)
-Encryption    : ECIES (replaces hardcoded AES key)
-
-Handshake flow
---------------
+""""
 1. On first GET, Alice2 sends her ECC public key to Bob2.
 2. Bob2 replies with his ECC public key (via /receive).
 3. Once both sides have each other's public key, every
    message is encrypted with ecies_encrypt(msg, peer_pub).
 4. Receiver calls ecies_decrypt(bundle, own_priv) to read it.
-
-No shared secret or AES key is ever transmitted in plaintext.
-The ephemeral key inside ECIES guarantees forward secrecy.
 """
 
 import requests
@@ -24,28 +14,27 @@ from crypto.ECIES import ecies_encrypt, ecies_decrypt, bundle_to_hex, bundle_fro
 
 app = Flask(__name__)
 
-# ── Network ──────────────────────────────────────────────────
+# --------- Network -----------------------------------
 NODE_B_URL = "http://127.0.0.1:5002/receive"
 
-# ── State ────────────────────────────────────────────────────
+# --------- State ----------------------------------------
 inbox_messages = []
 
-# Alice2's long-term ECC key pair  (generated once at startup)
 A_priv, A_pub = generate_keypair()
-B_pub          = None        # filled in when Bob22's public key arrives
+B_pub          = None       
 sent_my_key    = False
 
 
-# ══════════════════════════════════════════════════════════════
+# ----------------------------------------
 #  Routes
-# ══════════════════════════════════════════════════════════════
+#------------------------------------
 
 @app.route("/", methods=["GET", "POST"])
 def home():
     global sent_my_key, B_pub
     status = ""
 
-    # ── SEND public key once on first visit ──────────────────
+    
     if request.method == "GET" and not sent_my_key:
         ax, ay = A_pub
         payload = {"type": "A_pub", "x": ax, "y": ay}
@@ -57,7 +46,7 @@ def home():
         except Exception:
             status = "Bob2 is offline — couldn't send public key."
 
-    # ── SEND encrypted message ───────────────────────────────
+    # --------- SEND encrypted message -------------------------------------
     if request.method == "POST":
         if B_pub is None:
             status = "Waiting for Bob2's public key — try again in a moment."
@@ -85,7 +74,6 @@ def home():
 
 @app.route("/receive", methods=["POST"])
 def receive():
-    """Receive either Bob2's public key or an encrypted message."""
     global B_pub
     data = request.get_json()
 
