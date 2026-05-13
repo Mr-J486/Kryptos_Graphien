@@ -35,7 +35,6 @@ _INF = None
 
 
 def _get_curve(curve_name: str) -> dict:
-    """Return curve parameters by name, raise ValueError for unknown names (ECC-02)."""
     if curve_name not in _CURVES:
         raise ValueError(
             f"Unknown curve '{curve_name}'. "
